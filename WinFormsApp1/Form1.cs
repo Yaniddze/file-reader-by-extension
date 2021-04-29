@@ -28,18 +28,23 @@ namespace WinFormsApp1
 
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
             {
+                label2.Text = fbd.SelectedPath;
                 SearchInFolders(fbd.SelectedPath);
             }
         }
 
         private void SearchInFolders(string folder)
         {
+            if (folder.Contains("node_modules")) return;
+
             files.AddRange(Directory.GetFiles(folder));
             var newFolders = Directory.GetDirectories(folder);
 
             if (newFolders.Length > 0)
             {
-                newFolders.ToList().ForEach(newFolder => SearchInFolders(newFolder));
+                newFolders
+                    .ToList()
+                    .ForEach(newFolder => SearchInFolders(newFolder));
             }
         }
 
@@ -49,12 +54,15 @@ namespace WinFormsApp1
 
             var extensions = textBox1.Text.Split(" ");
 
-            var validatedFiles = extensions.SelectMany(ex => files.Where(x => x.EndsWith(ex))).ToList();
+            var validatedFiles = extensions
+                .SelectMany(ex => files
+                    .Where(x => x.EndsWith(ex))
+                ).ToList();
 
             validatedFiles.ForEach(file =>
             {
                 var text = File.ReadAllText(file);
-                resultString += text;
+                resultString += $"\n{file.Split(@"\").LastOrDefault()}\n\n{text}\n";
             });
 
             richTextBox1.Text = resultString;
